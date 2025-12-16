@@ -51,7 +51,9 @@ class LinuxcordPaths:
 
     def acquire_lock(self) -> FileLock:
         lock_path = (
-            self.runtime_dir / f"{APP_NAME}.lock" if self.runtime_dir else self.state_dir / "lock"
+            self.runtime_dir / f"{APP_NAME}.lock"
+            if self.runtime_dir
+            else self.state_dir / "lock"
         )
         lock_path.parent.mkdir(parents=True, exist_ok=True)
         lock = FileLock(lock_path)
@@ -59,7 +61,12 @@ class LinuxcordPaths:
         return lock
 
     def ensure_base_dirs(self) -> None:
-        for directory in (self.data_dir, self.cache_dir, self.state_dir, self.discord_versions_dir):
+        for directory in (
+            self.data_dir,
+            self.cache_dir,
+            self.state_dir,
+            self.discord_versions_dir,
+        ):
             directory.mkdir(parents=True, exist_ok=True)
 
     def discord_paths(self, discord_version: DiscordVersion) -> "DiscordPaths":
@@ -76,7 +83,7 @@ class DiscordPaths:
 
     @property
     def icon(self) -> Path:
-        return self._dir / "icon.png"
+        return self._dir / "discord.png"
 
     @property
     def executable(self) -> Path:
@@ -85,4 +92,3 @@ class DiscordPaths:
     @property
     def build_info(self) -> Path:
         return self._dir / "resources" / "build_info.json"
-
