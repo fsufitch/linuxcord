@@ -25,5 +25,6 @@ def launch_discord() -> None:
         raise RuntimeError("Discord binary not found in current installation")
 
     env = os.environ.copy()
+    logger.debug("Launching Discord with cwd=%s", discord_dir)
     logger.info("Launching Discord from %s", binary)
     _ = subprocess.Popen([str(binary)], cwd=str(discord_dir), env=env)

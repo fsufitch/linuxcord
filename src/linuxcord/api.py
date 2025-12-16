@@ -70,9 +70,11 @@ def uninstall() -> None:
 
     for path in (desktop_install, desktop):
         try:
+            logger.debug("Removing desktop entry %s", path)
             path.unlink()
         except FileNotFoundError:
             pass
     for directory in (data, cache, state):
+        logger.debug("Removing directory %s", directory)
         shutil.rmtree(directory, ignore_errors=True)
     logger.info("Uninstalled linuxcord-managed files")

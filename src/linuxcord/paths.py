@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 
 from xdg import BaseDirectory
 
 APP_NAME = "linuxcord"
+
+LOGGER = logging.getLogger(__name__)
 
 
 def _xdg_dir(value: str | None, default: str) -> Path:
@@ -61,4 +64,6 @@ def lock_file() -> Path:
 
 def ensure_base_dirs() -> None:
     for path in (data_dir(), cache_dir(), state_dir(), discord_root(), versions_dir()):
+        if not path.exists():
+            LOGGER.debug("Creating directory %s", path)
         path.mkdir(parents=True, exist_ok=True)
