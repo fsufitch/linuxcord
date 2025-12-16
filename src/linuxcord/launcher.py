@@ -16,15 +16,14 @@ def _ensure_not_root() -> None:
 
 def launch_discord() -> None:
     _ensure_not_root()
-    current = get_current_install()
-    if current is None:
+    current_dir = get_current_install()
+    if current_dir is None:
         raise RuntimeError("Discord is not installed. Run 'linuxcord init' first.")
-    discord_dir = current / "Discord"
-    binary = discord_dir / "Discord"
+    binary = current_dir / "Discord"
     if not binary.exists():
         raise RuntimeError("Discord binary not found in current installation")
 
     env = os.environ.copy()
-    logger.debug("Launching Discord with cwd=%s", discord_dir)
+    logger.debug("Launching Discord with cwd=%s", current_dir)
     logger.info("Launching Discord from %s", binary)
-    _ = subprocess.Popen([str(binary)], cwd=str(discord_dir), env=env)
+    _ = subprocess.Popen([str(binary)], cwd=str(current_dir), env=env)
