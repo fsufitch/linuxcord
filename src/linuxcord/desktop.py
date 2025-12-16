@@ -27,7 +27,6 @@ def create_desktop_entry(icon_path: Path) -> Path:
 
     desktop = DesktopEntry()
     desktop.addGroup("Desktop Entry")
-    desktop.setGroup("Desktop Entry")
     desktop.set("Version", "1.0")
     desktop.set("Type", "Application")
     desktop.set("Name", DESKTOP_NAME)
