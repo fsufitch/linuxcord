@@ -119,3 +119,20 @@ class DiscordInstaller:
             symlink.unlink()
         logger.info("Linking %s to current install", target_dir)
         symlink.symlink_to(target_dir)
+
+    def prune_old_versions(self, current_version: DiscordVersion) -> None:
+        versions_dir = self._paths.discord_versions_dir
+        no_pruning_flag = versions_dir / "NO_PRUNING"
+        if no_pruning_flag.exists():
+            logger.info("Skipping pruning because %s exists", no_pruning_flag)
+            return
+
+        current_dir = self._paths.discord_paths(current_version).dir
+        for child in versions_dir.iterdir():
+            if child == current_dir:
+                continue
+            if child == self._paths.discord_current_version_dir_symlink:
+                continue
+            if child.is_dir():
+                logger.info("Pruning old Discord install at %s", child)
+                shutil.rmtree(child, ignore_errors=True)

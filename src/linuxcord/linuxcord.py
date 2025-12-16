@@ -102,6 +102,7 @@ def update(
 
         discord_paths = installer.install(target_version, download_url, force=force)
         installer.link_current(target_version)
+        installer.prune_old_versions(target_version)
 
         desktop = FreeDesktop(linuxcord_paths)
         _ = desktop.create_desktop_entry()
