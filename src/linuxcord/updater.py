@@ -138,6 +138,11 @@ def _download_tarball(url: str, dest: Path) -> Path:
         total_bytes = int(total) if total and total.isdigit() else None
         downloaded = 0
         logger.debug("Response Content-Length: %s", total_bytes)
+        last_logged_percent: int | None = None
+        next_log_bytes = 0
+        if total_bytes:
+            logger.info("Download progress: 0%%")
+            last_logged_percent = 0
         with dest.open("wb") as f:
             for chunk_bytes in cast(
                 Iterable[bytes], response.iter_content(chunk_size=CHUNK_SIZE)
@@ -146,11 +151,17 @@ def _download_tarball(url: str, dest: Path) -> Path:
                     continue
                 _ = f.write(chunk_bytes)
                 downloaded += len(chunk_bytes)
-                if total_bytes:
+                if total_bytes and last_logged_percent is not None:
                     percent = downloaded * 100 // total_bytes
-                    logger.info("Download progress: %s%%", percent)
+                    if percent - last_logged_percent >= 5:
+                        step = (percent // 5) * 5
+                        if step > last_logged_percent:
+                            logger.info("Download progress: %s%%", step)
+                            last_logged_percent = step
                 else:
-                    logger.info("Downloaded %s bytes", downloaded)
+                    if downloaded >= next_log_bytes:
+                        logger.info("Downloaded %s bytes", downloaded)
+                        next_log_bytes += 1_000_000
     logger.info("Download complete: %s", dest)
     return dest
 
