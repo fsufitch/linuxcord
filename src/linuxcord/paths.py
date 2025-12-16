@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import cast
 
-from filelock import BaseFileLock, FileLock
+from filelock import FileLock
 
 from linuxcord.types import DiscordVersion, PyXDG
 
@@ -49,7 +50,7 @@ class LinuxcordPaths:
             return None
         return Path(value) if value else None
 
-    def acquire_lock(self) -> BaseFileLock:
+    def acquire_lock(self) -> FileLock:
         lock_path = (
             self.runtime_dir / f"{APP_NAME}.lock"
             if self.runtime_dir
@@ -58,7 +59,7 @@ class LinuxcordPaths:
         lock_path.parent.mkdir(parents=True, exist_ok=True)
         lock = FileLock(lock_path)
         _ = lock.acquire()
-        return lock
+        return cast(FileLock, lock)
 
     def ensure_base_dirs(self) -> None:
         for directory in (
