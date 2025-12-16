@@ -13,7 +13,7 @@ linuxcord is a user-space Discord launcher for Linux. It downloads the official 
 Install via `pipx` directly from the repository:
 
 ```bash
-pipx install git+https://github.com/<user>/linuxcord.git
+pipx install git+https://github.com/fsufitch/linuxcord.git
 ```
 
 After installation the `linuxcord` command is available on your PATH, and you can also run `python -m linuxcord`.
