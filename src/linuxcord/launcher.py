@@ -10,16 +10,17 @@ from linuxcord.types import DiscordVersion
 
 
 logger = logging.getLogger(__name__)
+PopenType = Callable[..., subprocess.Popen[bytes]] | type[subprocess.Popen[bytes]]
 
 
 class DiscordLauncher:
     def __init__(
         self,
         linuxcord_paths: LinuxcordPaths,
-        popen: Callable[..., subprocess.Popen] | type[subprocess.Popen] | None = None,
+        popen: PopenType | None = None,
     ):
-        self._paths = linuxcord_paths
-        self.popen = popen or subprocess.Popen
+        self._paths: LinuxcordPaths = linuxcord_paths
+        self.popen: PopenType = popen or subprocess.Popen
 
     def _ensure_not_root(self) -> None:
         if hasattr(os, "geteuid") and os.geteuid() == 0:
@@ -36,5 +37,5 @@ class DiscordLauncher:
         env = os.environ.copy()
         logger.debug("Launching Discord with cwd=%s", install_dir)
         logger.info("Launching Discord from %s", executable)
-        _ = self.popen([str(executable)], cwd=str(install_dir), env=env)
-
+        popen = self.popen
+        _ = popen([str(executable)], cwd=str(install_dir), env=env)

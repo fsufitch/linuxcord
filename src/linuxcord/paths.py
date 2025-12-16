@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import cast
 
 from filelock import FileLock
 
@@ -12,7 +13,7 @@ APP_NAME = "linuxcord"
 
 class LinuxcordPaths:
     def __init__(self, xdg: PyXDG):
-        self._xdg = xdg
+        self._xdg: PyXDG = xdg
 
     @property
     def data_dir(self) -> Path:
@@ -57,8 +58,8 @@ class LinuxcordPaths:
         )
         lock_path.parent.mkdir(parents=True, exist_ok=True)
         lock = FileLock(lock_path)
-        lock.acquire()
-        return lock
+        _ = lock.acquire()
+        return cast(FileLock, lock)
 
     def ensure_base_dirs(self) -> None:
         for directory in (
@@ -75,7 +76,7 @@ class LinuxcordPaths:
 
 class DiscordPaths:
     def __init__(self, location: Path | str):
-        self._dir = Path(location)
+        self._dir: Path = Path(location)
 
     @property
     def dir(self) -> Path:

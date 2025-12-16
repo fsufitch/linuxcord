@@ -29,10 +29,11 @@ linuxcord update --force
 ```
 
 ### Run
-Launch Discord using the current installation (run `linuxcord update` first to ensure you have the latest host version):
+Launch Discord. By default, linuxcord checks for updates and installs them before launching; add `--no-update` to skip the check:
 
 ```bash
 linuxcord run
+linuxcord run --no-update
 ```
 
 ### Update without launching

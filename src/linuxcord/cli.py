@@ -76,11 +76,18 @@ def update(ctx: Context, force: bool) -> None:
 
 
 @cli.command()
+@click.option(
+    "--no-update",
+    is_flag=True,
+    help="Skip update check before launching (default: check and update if needed)",
+)
 @click.pass_obj
-def run(ctx: Context) -> None:
-    result = linuxcord.status(discord_updates_url=ctx.updates_url)
-    _print_status(result)
-    linuxcord.run()
+def run(ctx: Context, no_update: bool) -> None:
+    linuxcord.run(
+        discord_tgz_url=ctx.discord_tgz_url,
+        discord_updates_url=ctx.updates_url,
+        no_update=no_update,
+    )
 
 
 @cli.command()

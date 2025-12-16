@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class LocalVersioner:
     def __init__(self, linuxcord_paths: LinuxcordPaths):
-        self._paths = linuxcord_paths
+        self._paths: LinuxcordPaths = linuxcord_paths
 
     def get_version(self, path: str | Path) -> DiscordVersion | None:
         try:
@@ -42,9 +42,9 @@ class OnlineVersioner:
         discord_updates_url: str,
         session: requests.Session,
     ):
-        self._tgz_url = discord_tgz_url
-        self._updates_url = discord_updates_url
-        self._session = session
+        self._tgz_url: str = discord_tgz_url
+        self._updates_url: str = discord_updates_url
+        self._session: requests.Session = session
 
     def _extract_version_from_url(self, url: str) -> DiscordVersion | None:
         pattern = r"([0-9]+\.[0-9]+\.[0-9]+)"
@@ -81,4 +81,3 @@ class OnlineVersioner:
         final_url = response.url
         response.close()
         return final_url
-

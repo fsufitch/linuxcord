@@ -36,9 +36,11 @@ def _safe_extract(tar: tarfile.TarFile, target: Path) -> None:
 
 class DiscordInstaller:
     def __init__(self, linuxcord_paths: LinuxcordPaths):
-        self._paths = linuxcord_paths
+        self._paths: LinuxcordPaths = linuxcord_paths
 
-    def install(self, version: DiscordVersion, tgz_url: str, force: bool = False) -> DiscordPaths:
+    def install(
+        self, version: DiscordVersion, tgz_url: str, force: bool = False
+    ) -> DiscordPaths:
         destination = self._paths.discord_paths(version).dir
         if destination.exists():
             if not force:
@@ -59,12 +61,18 @@ class DiscordInstaller:
                 raise ValueError("Extracted archive missing Discord directory")
 
             logger.debug("Moving extracted Discord directory to %s", destination)
-            shutil.move(str(extracted), destination)
+            _ = shutil.move(str(extracted), destination)
 
         discord_paths = DiscordPaths(destination)
-        for required in (discord_paths.icon, discord_paths.executable, discord_paths.build_info):
+        for required in (
+            discord_paths.icon,
+            discord_paths.executable,
+            discord_paths.build_info,
+        ):
             if not required.exists():
-                raise FileNotFoundError(f"Expected file {required} not found after install")
+                raise FileNotFoundError(
+                    f"Expected file {required} not found after install"
+                )
 
         installed_version = DiscordVersion.from_build_info(discord_paths.build_info)
         if installed_version != version:
@@ -74,19 +82,26 @@ class DiscordInstaller:
 
         icon_target = self._paths.data_dir / "discord.png"
         try:
-            shutil.copy(discord_paths.icon, icon_target)
+            _ = shutil.copy(discord_paths.icon, icon_target)
         except FileNotFoundError:
-            logger.warning("Icon not found at %s; desktop entry may be missing icon", discord_paths.icon)
+            logger.warning(
+                "Icon not found at %s; desktop entry may be missing icon",
+                discord_paths.icon,
+            )
 
         return discord_paths
 
     def _download_tarball(self, url: str, dest: Path) -> None:
         logger.info("Downloading Discord from %s", url)
         dest.parent.mkdir(parents=True, exist_ok=True)
-        with requests.get(url, stream=True, timeout=15, allow_redirects=True) as response:
+        with requests.get(
+            url, stream=True, timeout=15, allow_redirects=True
+        ) as response:
             response.raise_for_status()
             with dest.open("wb") as f:
-                for chunk_bytes in cast(Iterable[bytes], response.iter_content(chunk_size=CHUNK_SIZE)):
+                for chunk_bytes in cast(
+                    Iterable[bytes], response.iter_content(chunk_size=CHUNK_SIZE)
+                ):
                     if not chunk_bytes:
                         continue
                     _ = f.write(chunk_bytes)
@@ -101,4 +116,3 @@ class DiscordInstaller:
             symlink.unlink()
         logger.info("Linking %s to current install", target_dir)
         symlink.symlink_to(target_dir)
-

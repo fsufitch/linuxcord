@@ -16,7 +16,7 @@ DESKTOP_NAME = "Linuxcord (Discord)"
 
 class FreeDesktop:
     def __init__(self, paths: LinuxcordPaths):
-        self._paths = paths
+        self._paths: LinuxcordPaths = paths
 
     @property
     def desktop_entry(self) -> Path:
@@ -47,7 +47,9 @@ class FreeDesktop:
     def create_application_symlink(self) -> Path:
         self.application_symlink.parent.mkdir(parents=True, exist_ok=True)
         if self.application_symlink.exists() or self.application_symlink.is_symlink():
-            logger.debug("Removing existing desktop link at %s", self.application_symlink)
+            logger.debug(
+                "Removing existing desktop link at %s", self.application_symlink
+            )
             self.application_symlink.unlink()
 
         if not self.desktop_entry.exists():
@@ -63,8 +65,9 @@ class FreeDesktop:
         target = os.fspath(self.desktop_entry)
         self.application_symlink.symlink_to(target)
 
-        menu_entry = MenuEntry(self.application_symlink.name, dir=str(self._paths.applications_dir))
+        menu_entry = MenuEntry(
+            self.application_symlink.name, dir=str(self._paths.applications_dir)
+        )
         menu_entry.DesktopEntry = DesktopEntry(str(self.application_symlink))
         menu_entry.save()
         return self.application_symlink
-
