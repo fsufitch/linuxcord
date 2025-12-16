@@ -20,19 +20,20 @@ After installation the `linuxcord` command is available on your PATH, and you ca
 
 ## Usage
 
-### Initialize
-Initialize the data directories, install the desktop entry, and install Discord if missing (or reinstall with `--force`):
+### Install or update
+Install the data directories, desktop entry, and Discord itself (or reinstall with `--force`):
 
 ```bash
-linuxcord init
-linuxcord init --force
+linuxcord update
+linuxcord update --force
 ```
 
 ### Run
-Update if needed and launch Discord:
+Launch Discord. By default, linuxcord checks for updates and installs them before launching; add `--no-update` to skip the check:
 
 ```bash
 linuxcord run
+linuxcord run --no-update
 ```
 
 ### Update without launching

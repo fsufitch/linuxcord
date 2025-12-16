@@ -6,7 +6,7 @@ import sys
 import click
 
 from linuxcord import DEFAULT_DISCORD_TGZ_URL, DEFAULT_UPDATES_URL
-from linuxcord import api
+from linuxcord import linuxcord
 from linuxcord.logging_config import configure_logging
 
 logger = logging.getLogger(__name__)
@@ -54,9 +54,11 @@ def cli(
         )
 
 
-def _print_status(result: api.UpdateResult) -> None:
-    click.echo(f"Installed version: {result.installed_version or 'none'}")
-    click.echo(f"Latest online version: {result.latest_version or 'unknown'}")
+def _print_status(result: linuxcord.UpdateResult) -> None:
+    installed = result.installed_version.string if result.installed_version else "none"
+    latest = result.latest_version.string if result.latest_version else "unknown"
+    click.echo(f"Installed version: {installed}")
+    click.echo(f"Latest online version: {latest}")
     current_path = result.current_path
     click.echo(f"Current install path: {current_path if current_path else 'none'}")
 
@@ -64,35 +66,34 @@ def _print_status(result: api.UpdateResult) -> None:
 @cli.command()
 @click.option("--force", is_flag=True, help="Force reinstall even if up to date")
 @click.pass_obj
-def init(ctx: Context, force: bool) -> None:
-    result = api.init(
-        force=force, discord_tgz_url=ctx.discord_tgz_url, updates_url=ctx.updates_url
+def update(ctx: Context, force: bool) -> None:
+    result = linuxcord.update(
+        discord_tgz_url=ctx.discord_tgz_url,
+        discord_updates_url=ctx.updates_url,
+        force=force,
     )
     _print_status(result)
 
 
 @cli.command()
+@click.option(
+    "--no-update",
+    is_flag=True,
+    help="Skip update check before launching (default: check and update if needed)",
+)
 @click.pass_obj
-def update(ctx: Context) -> None:
-    result = api.update(
-        discord_tgz_url=ctx.discord_tgz_url, updates_url=ctx.updates_url
+def run(ctx: Context, no_update: bool) -> None:
+    linuxcord.run(
+        discord_tgz_url=ctx.discord_tgz_url,
+        discord_updates_url=ctx.updates_url,
+        no_update=no_update,
     )
-    _print_status(result)
-
-
-@cli.command()
-@click.pass_obj
-def run(ctx: Context) -> None:
-    result = api.run(discord_tgz_url=ctx.discord_tgz_url, updates_url=ctx.updates_url)
-    _print_status(result)
 
 
 @cli.command()
 @click.pass_obj
 def status(ctx: Context) -> None:
-    result = api.status(
-        discord_tgz_url=ctx.discord_tgz_url, updates_url=ctx.updates_url
-    )
+    result = linuxcord.status(discord_updates_url=ctx.updates_url)
     _print_status(result)
 
 
@@ -104,7 +105,7 @@ def uninstall(ctx: Context, yes: bool) -> None:
     if not yes and not click.confirm("Remove linuxcord data and desktop entries?"):
         click.echo("Aborted")
         raise SystemExit(1)
-    api.uninstall()
+    linuxcord.uninstall()
     click.echo("linuxcord files removed")
 
 
