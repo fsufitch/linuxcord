@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "linuxcord"
-version = "0.1.0"
+version = "0.1.1"
 description = "User-space Discord launcher/updater for Linux"
 readme = "README.md"
 authors = [{ name = "linuxcord", email = "noreply@example.com" }]
