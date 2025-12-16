@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from linuxcord import updater
+from linuxcord import paths, updater
 
 
 def test_safe_extract_prevents_traversal(tmp_path: Path) -> None:
@@ -30,3 +30,20 @@ def test_update_if_needed_no_install(monkeypatch: pytest.MonkeyPatch) -> None:
     result = updater.update_if_needed(perform_install=False)
     assert result.updated is False
     assert result.installed_version == "1.0"
+
+
+def test_remove_other_versions() -> None:
+    versions_dir = paths.versions_dir()
+    versions_dir.mkdir(parents=True, exist_ok=True)
+
+    active = versions_dir / "Discord-2"
+    old = versions_dir / "Discord-1"
+    other = versions_dir / "misc"
+    for path in (active, old, other):
+        path.mkdir(parents=True, exist_ok=True)
+
+    updater._remove_other_versions(active)  # pyright: ignore[reportPrivateUsage]
+
+    assert active.exists()
+    assert not old.exists()
+    assert other.exists()

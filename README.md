@@ -77,6 +77,7 @@ linuxcord stores files under standard XDG locations:
 - State file: `$XDG_STATE_HOME/linuxcord/state.json`
 - Desktop entry: `$XDG_DATA_HOME/linuxcord/linuxcord.desktop`
 - Installed desktop entry: `~/.local/share/applications/linuxcord.desktop`
+- linuxcord prunes older Discord installs after an update, keeping only the active version to limit disk usage.
 
 ## Desktop Entry
 linuxcord creates a desktop entry pointing to `linuxcord run` with a bundled Discord icon stored in `$XDG_DATA_HOME/linuxcord/discord.png`. The entry is symlinked (or copied if necessary) to `~/.local/share/applications/linuxcord.desktop`.

@@ -167,7 +167,7 @@ def _extract_and_install(tarball: Path) -> str:
 
         _update_current_symlink(destination)
         _copy_icon(destination)
-        _prune_old_versions()
+        _remove_other_versions(destination)
         return version
 
 
@@ -194,17 +194,23 @@ def _copy_icon(install_dir: Path) -> None:
             break
 
 
-def _prune_old_versions(keep: int = 3) -> None:
+def _remove_other_versions(active_version: Path) -> None:
     versions_path = paths.versions_dir()
-    entries = [
-        p
-        for p in versions_path.iterdir()
-        if p.is_dir() and p.name.startswith("Discord-")
-    ]
-    entries.sort(key=lambda p: p.stat().st_mtime, reverse=True)
-    for old in entries[keep:]:
-        shutil.rmtree(old, ignore_errors=True)
-        logger.debug("Removed old version %s", old)
+    if not versions_path.exists():
+        return
+
+    try:
+        active_resolved = active_version.resolve(strict=True)
+    except FileNotFoundError:
+        active_resolved = active_version
+
+    for candidate in versions_path.iterdir():
+        if not candidate.is_dir() or not candidate.name.startswith("Discord-"):
+            continue
+        if candidate.resolve() == active_resolved:
+            continue
+        shutil.rmtree(candidate, ignore_errors=True)
+        logger.debug("Removed old version %s", candidate)
 
 
 def update_if_needed(
