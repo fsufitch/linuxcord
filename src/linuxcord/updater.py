@@ -63,8 +63,15 @@ def get_installed_version() -> str | None:
     current = get_current_install()
     if current is None:
         return None
-    build_info = current / "Discord/resources/build_info.json"
-    return _read_build_version(build_info)
+    build_info_paths = [
+        current / "resources/build_info.json",
+        current / "Discord/resources/build_info.json",
+    ]
+    for build_info in build_info_paths:
+        version = _read_build_version(build_info)
+        if version:
+            return version
+    return None
 
 
 def _extract_version_from_url(url: str) -> str | None:
