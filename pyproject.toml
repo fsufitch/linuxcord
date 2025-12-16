@@ -1,0 +1,41 @@
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[project]
+name = "linuxcord"
+version = "0.1.0"
+description = "User-space Discord launcher/updater for Linux"
+readme = "README.md"
+authors = [{ name = "linuxcord", email = "noreply@example.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1",
+    "pyxdg>=0.28",
+    "requests>=2.31",
+]
+license = { file = "LICENSE" }
+
+[project.scripts]
+linuxcord = "linuxcord.cli:main"
+
+[tool.uv]
+dev-dependencies = [
+    "black>=24.0",
+    "flake8>=6.1",
+    "flake8-pyproject>=1.2",
+    "basedpyright>=1.14",
+    "pytest>=7.4",
+]
+
+[tool.flake8]
+ignore = ["E501"]
+extend-exclude = [".venv"]
+
+[tool.basedpyright]
+pythonVersion = "3.11"
+
+[tool.black]
+target-version = ["py311"]
+line-length = 88
+
