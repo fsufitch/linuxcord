@@ -120,8 +120,25 @@ def status(
     return UpdateResult(installed_version, latest_version, False, current_path)
 
 
-def run(*, xdg: PyXDG | None = None) -> None:
+def run(
+    *,
+    xdg: PyXDG | None = None,
+    session: requests.Session | None = None,
+    discord_tgz_url: str | None = None,
+    discord_updates_url: str | None = None,
+    no_update: bool = False,
+) -> None:
     linuxcord_paths = _build_paths(xdg)
+    linuxcord_paths.ensure_base_dirs()
+
+    if not no_update:
+        update(
+            xdg=xdg,
+            session=session,
+            discord_tgz_url=discord_tgz_url,
+            discord_updates_url=discord_updates_url,
+        )
+
     local_versioner = LocalVersioner(linuxcord_paths)
     current_version = local_versioner.get_current_version()
     if current_version is None:
