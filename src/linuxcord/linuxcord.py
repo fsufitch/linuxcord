@@ -4,6 +4,7 @@ import logging
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 import requests
 from xdg import BaseDirectory
@@ -29,7 +30,8 @@ class UpdateResult:
 
 
 def _build_paths(xdg: PyXDG | None) -> LinuxcordPaths:
-    return LinuxcordPaths(xdg or BaseDirectory)
+    resolved_xdg = cast(PyXDG, xdg or BaseDirectory)
+    return LinuxcordPaths(resolved_xdg)
 
 
 def update(
@@ -52,18 +54,30 @@ def update(
         local_versioner = LocalVersioner(linuxcord_paths)
         installed_version = local_versioner.get_current_version()
 
-        online_versioner = OnlineVersioner(discord_tgz_url, discord_updates_url, session)
+        online_versioner = OnlineVersioner(
+            discord_tgz_url, discord_updates_url, session
+        )
         latest_version = online_versioner.get_latest_version()
 
-        logger.info("Installed version: %s", installed_version.string if installed_version else "none")
-        logger.info("Latest available version: %s", latest_version.string if latest_version else "unknown")
+        logger.info(
+            "Installed version: %s",
+            installed_version.string if installed_version else "none",
+        )
+        logger.info(
+            "Latest available version: %s",
+            latest_version.string if latest_version else "unknown",
+        )
 
         needs_install = installed_version is None
-        needs_update = latest_version is not None and installed_version != latest_version
+        needs_update = (
+            latest_version is not None and installed_version != latest_version
+        )
 
         if not force and not needs_install and not needs_update:
             current_path = (
-                linuxcord_paths.discord_current_version_dir_symlink.resolve(strict=False)
+                linuxcord_paths.discord_current_version_dir_symlink.resolve(
+                    strict=False
+                )
                 if linuxcord_paths.discord_current_version_dir_symlink.exists()
                 else None
             )
@@ -71,7 +85,9 @@ def update(
 
         if latest_version is None and not force:
             current_path = (
-                linuxcord_paths.discord_current_version_dir_symlink.resolve(strict=False)
+                linuxcord_paths.discord_current_version_dir_symlink.resolve(
+                    strict=False
+                )
                 if linuxcord_paths.discord_current_version_dir_symlink.exists()
                 else None
             )
@@ -88,10 +104,12 @@ def update(
         installer.link_current(target_version)
 
         desktop = FreeDesktop(linuxcord_paths)
-        desktop.create_desktop_entry()
-        desktop.create_application_symlink()
+        _ = desktop.create_desktop_entry()
+        _ = desktop.create_application_symlink()
 
-        return UpdateResult(target_version, latest_version or target_version, True, discord_paths.dir)
+        return UpdateResult(
+            target_version, latest_version or target_version, True, discord_paths.dir
+        )
     finally:
         lock.release()
 
@@ -115,7 +133,9 @@ def status(
         else None
     )
 
-    online_versioner = OnlineVersioner(DEFAULT_DISCORD_TGZ_URL, discord_updates_url, session)
+    online_versioner = OnlineVersioner(
+        DEFAULT_DISCORD_TGZ_URL, discord_updates_url, session
+    )
     latest_version = online_versioner.get_latest_version()
     return UpdateResult(installed_version, latest_version, False, current_path)
 
@@ -132,7 +152,7 @@ def run(
     linuxcord_paths.ensure_base_dirs()
 
     if not no_update:
-        update(
+        _ = update(
             xdg=xdg,
             session=session,
             discord_tgz_url=discord_tgz_url,
@@ -165,4 +185,3 @@ def uninstall(*, xdg: PyXDG | None = None) -> None:
     ):
         shutil.rmtree(directory, ignore_errors=True)
     logger.info("Uninstalled linuxcord-managed files")
-

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from filelock import FileLock
+from filelock import BaseFileLock, FileLock
 
 from linuxcord.types import DiscordVersion, PyXDG
 
@@ -12,7 +12,7 @@ APP_NAME = "linuxcord"
 
 class LinuxcordPaths:
     def __init__(self, xdg: PyXDG):
-        self._xdg = xdg
+        self._xdg: PyXDG = xdg
 
     @property
     def data_dir(self) -> Path:
@@ -49,17 +49,24 @@ class LinuxcordPaths:
             return None
         return Path(value) if value else None
 
-    def acquire_lock(self) -> FileLock:
+    def acquire_lock(self) -> BaseFileLock:
         lock_path = (
-            self.runtime_dir / f"{APP_NAME}.lock" if self.runtime_dir else self.state_dir / "lock"
+            self.runtime_dir / f"{APP_NAME}.lock"
+            if self.runtime_dir
+            else self.state_dir / "lock"
         )
         lock_path.parent.mkdir(parents=True, exist_ok=True)
         lock = FileLock(lock_path)
-        lock.acquire()
+        _ = lock.acquire()
         return lock
 
     def ensure_base_dirs(self) -> None:
-        for directory in (self.data_dir, self.cache_dir, self.state_dir, self.discord_versions_dir):
+        for directory in (
+            self.data_dir,
+            self.cache_dir,
+            self.state_dir,
+            self.discord_versions_dir,
+        ):
             directory.mkdir(parents=True, exist_ok=True)
 
     def discord_paths(self, discord_version: DiscordVersion) -> "DiscordPaths":
@@ -68,7 +75,7 @@ class LinuxcordPaths:
 
 class DiscordPaths:
     def __init__(self, location: Path | str):
-        self._dir = Path(location)
+        self._dir: Path = Path(location)
 
     @property
     def dir(self) -> Path:
@@ -85,4 +92,3 @@ class DiscordPaths:
     @property
     def build_info(self) -> Path:
         return self._dir / "resources" / "build_info.json"
-
