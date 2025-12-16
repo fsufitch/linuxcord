@@ -1,13 +1,14 @@
 # linuxcord
 
-linuxcord is a user-space Discord launcher for Linux. It downloads the official Discord tarball, installs it under XDG directories, keeps host (the installed application on your machine) updates current, and launches Discord without needing system-level packages.
+linuxcord is a user-space Discord launcher/updater for Linux. It installs Discord into your XDG data directory, manages a versioned `current` symlink, and launches Discord without needing system-level packages.
 
-## Features
-- Installs Discord from the official tar.gz into user directories.
-- Checks for host updates on each run and upgrades if needed.
-- Desktop entry installation for desktop environments.
-- Pure-Python API plus Click-based CLI.
-- Configurable download and updates endpoints for testing.
+## What it does
+- Resolves the latest Discord build from the official update API, falling back to the redirected tarball URL if the API is unavailable.
+- Downloads and safely extracts the official Discord tarball into a versioned directory under `$XDG_DATA_HOME/linuxcord/versions/`.
+- Copies the Discord icon into the data directory, writes a FreeDesktop desktop entry that calls `linuxcord run`, and symlinks it into your applications directory.
+- Maintains a file lock in the XDG runtime directory (or state directory) to avoid concurrent installs/updates.
+- Prunes old installs after a successful update, keeping only the active version unless a `NO_PRUNING` file is present.
+- Provides both a Python API and a Click-based CLI for automation.
 
 ## Installation
 Install via `pipx` directly from the repository:
@@ -20,8 +21,10 @@ After installation the `linuxcord` command is available on your PATH, and you ca
 
 ## Usage
 
+All commands honour the same URL resolution: CLI flags override environment variables (`LINUXCORD_DISCORD_TGZ_URL`, `LINUXCORD_UPDATES_URL`), which in turn override the baked-in defaults. Updates are serialized via a file lock to avoid concurrent installs.
+
 ### Install or update
-Install the data directories, desktop entry, and Discord itself (or reinstall with `--force`):
+Install the data directories, desktop entry, and Discord itself (or reinstall with `--force`). The command also refreshes the desktop entry and application symlink after installing and prunes older installs unless `NO_PRUNING` is present:
 
 ```bash
 linuxcord update
@@ -29,7 +32,7 @@ linuxcord update --force
 ```
 
 ### Run
-Launch Discord. By default, linuxcord checks for updates and installs them before launching; add `--no-update` to skip the check:
+Launch Discord. By default, linuxcord checks for updates and installs them before launching; add `--no-update` to skip the check. Running as root is disallowed to avoid polluting system locations:
 
 ```bash
 linuxcord run
@@ -76,11 +79,11 @@ linuxcord stores files under standard XDG locations:
 - Data: `$XDG_DATA_HOME/linuxcord` (default `~/.local/share/linuxcord`)
 - Cache: `$XDG_CACHE_HOME/linuxcord` (default `~/.cache/linuxcord`)
 - State: `$XDG_STATE_HOME/linuxcord` (default `~/.local/state/linuxcord`)
-- Discord installs: `$XDG_DATA_HOME/linuxcord/discord/versions/Discord-<version>/`
-- Current symlink: `$XDG_DATA_HOME/linuxcord/discord/current`
-- State file: `$XDG_STATE_HOME/linuxcord/state.json`
-- Desktop entry: `$XDG_DATA_HOME/linuxcord/linuxcord.desktop`
-- Installed desktop entry: `~/.local/share/applications/linuxcord.desktop`
+- Discord installs: `$XDG_DATA_HOME/linuxcord/versions/<version>/`
+- Current symlink: `$XDG_DATA_HOME/linuxcord/versions/current`
+- Lock file: `$XDG_RUNTIME_DIR/linuxcord.lock` (falls back to `$XDG_STATE_HOME/linuxcord/lock`)
+- Icon and desktop entry: `$XDG_DATA_HOME/linuxcord/discord.png` and `$XDG_DATA_HOME/linuxcord/linuxcord.desktop`
+- Installed desktop entry symlink: typically `~/.local/share/applications/linuxcord.desktop`
 - linuxcord prunes older Discord installs after an update, keeping only the active version to limit disk usage. Create an empty `NO_PRUNING` file in the versions directory to disable pruning.
 
 ## Desktop Entry
