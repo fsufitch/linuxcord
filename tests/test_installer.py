@@ -226,3 +226,45 @@ def test_link_current_updates_symlink(
 
     installer.link_current(version_b)
     assert paths.discord_current_version_dir_symlink.readlink() == target_b
+
+
+def test_prune_removes_old_versions(tmp_path: Path, session: requests.Session) -> None:
+    installer, paths = create_installer(tmp_path, session)
+    paths.ensure_base_dirs()
+    current_version = DiscordVersion("11.0.0")
+    old_version = DiscordVersion("10.0.0")
+
+    current_dir = paths.discord_paths(current_version).dir
+    old_dir = paths.discord_paths(old_version).dir
+    current_dir.mkdir(parents=True)
+    old_dir.mkdir(parents=True)
+    paths.discord_current_version_dir_symlink.symlink_to(current_dir)
+
+    installer.prune_old_versions(current_version)
+
+    assert current_dir.exists()
+    assert not old_dir.exists()
+    assert paths.discord_current_version_dir_symlink.exists()
+
+
+def test_prune_respects_no_pruning_flag(
+    tmp_path: Path, session: requests.Session
+) -> None:
+    installer, paths = create_installer(tmp_path, session)
+    paths.ensure_base_dirs()
+    current_version = DiscordVersion("12.0.0")
+    old_version = DiscordVersion("12.0.1")
+
+    current_dir = paths.discord_paths(current_version).dir
+    old_dir = paths.discord_paths(old_version).dir
+    current_dir.mkdir(parents=True)
+    old_dir.mkdir(parents=True)
+    paths.discord_current_version_dir_symlink.symlink_to(current_dir)
+    no_pruning_flag = paths.discord_versions_dir / "NO_PRUNING"
+    _ = no_pruning_flag.write_text("")
+
+    installer.prune_old_versions(current_version)
+
+    assert current_dir.exists()
+    assert old_dir.exists()
+    assert no_pruning_flag.exists()

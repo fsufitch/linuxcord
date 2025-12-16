@@ -123,3 +123,89 @@ def test_uninstall_removes_installed_files(tmp_path: Path) -> None:
         paths.data_dir,
     ):
         assert not directory.exists()
+
+
+def test_update_prunes_previous_version(tmp_path: Path) -> None:
+    first_version = DiscordVersion("1.2.3")
+    second_version = DiscordVersion("1.2.4")
+
+    first_tarball = build_discord_tarball(tmp_path / "first", first_version)
+    second_tarball = build_discord_tarball(tmp_path / "second", second_version)
+
+    xdg = create_xdg(tmp_path)
+    paths = LinuxcordPaths(xdg)
+
+    with (
+        discord_test_server(first_version, first_tarball) as base_url,
+        requests.Session() as session,
+    ):
+        _ = linuxcord.update(
+            xdg=xdg,
+            session=session,
+            discord_tgz_url=f"{base_url}/download/discord_latest.tar.gz",
+            discord_updates_url=f"{base_url}/update_version",
+        )
+
+    assert paths.discord_paths(first_version).dir.exists()
+
+    with (
+        discord_test_server(second_version, second_tarball) as base_url,
+        requests.Session() as session,
+    ):
+        _ = linuxcord.update(
+            xdg=xdg,
+            session=session,
+            discord_tgz_url=f"{base_url}/download/discord_latest.tar.gz",
+            discord_updates_url=f"{base_url}/update_version",
+        )
+
+    current_dir = paths.discord_paths(second_version).dir
+    old_dir = paths.discord_paths(first_version).dir
+
+    assert current_dir.exists()
+    assert not old_dir.exists()
+    assert paths.discord_current_version_dir_symlink.resolve(strict=True) == current_dir
+
+
+def test_update_respects_no_pruning_flag(tmp_path: Path) -> None:
+    first_version = DiscordVersion("1.2.3")
+    second_version = DiscordVersion("1.2.4")
+
+    first_tarball = build_discord_tarball(tmp_path / "first", first_version)
+    second_tarball = build_discord_tarball(tmp_path / "second", second_version)
+
+    xdg = create_xdg(tmp_path)
+    paths = LinuxcordPaths(xdg)
+
+    with (
+        discord_test_server(first_version, first_tarball) as base_url,
+        requests.Session() as session,
+    ):
+        _ = linuxcord.update(
+            xdg=xdg,
+            session=session,
+            discord_tgz_url=f"{base_url}/download/discord_latest.tar.gz",
+            discord_updates_url=f"{base_url}/update_version",
+        )
+
+    no_pruning_flag = paths.discord_versions_dir / "NO_PRUNING"
+    _ = no_pruning_flag.write_text("")
+
+    with (
+        discord_test_server(second_version, second_tarball) as base_url,
+        requests.Session() as session,
+    ):
+        _ = linuxcord.update(
+            xdg=xdg,
+            session=session,
+            discord_tgz_url=f"{base_url}/download/discord_latest.tar.gz",
+            discord_updates_url=f"{base_url}/update_version",
+        )
+
+    current_dir = paths.discord_paths(second_version).dir
+    old_dir = paths.discord_paths(first_version).dir
+
+    assert current_dir.exists()
+    assert old_dir.exists()
+    assert no_pruning_flag.exists()
+    assert paths.discord_current_version_dir_symlink.resolve(strict=True) == current_dir
