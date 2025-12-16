@@ -96,7 +96,7 @@ def update(
         if latest_version is None:
             raise RuntimeError("Cannot determine the latest Discord version to install")
 
-        installer = DiscordInstaller(linuxcord_paths)
+        installer = DiscordInstaller(linuxcord_paths, session)
         download_url = online_versioner.get_latest_download_url()
         target_version = latest_version
 

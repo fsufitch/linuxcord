@@ -111,4 +111,9 @@ uv build
 ```
 
 ## Testing
-Automated tests are currently absent and will be added after refactoring the code to reduce monkeypatching requirements. TODO: reintroduce pytest-based coverage that exercises all non-launch code paths and document the coverage commands here.
+Run the test suite and view coverage:
+
+```bash
+uv run pytest
+uv run pytest --cov --cov-report=term-missing
+```
