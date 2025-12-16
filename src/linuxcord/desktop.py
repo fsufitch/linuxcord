@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import shutil
 from pathlib import Path
 
@@ -11,11 +12,18 @@ from linuxcord import paths
 
 
 DESKTOP_NAME = "Linuxcord (Discord)"
+LOGGER = logging.getLogger(__name__)
 
 
 def create_desktop_entry(icon_path: Path) -> Path:
     entry_path = paths.desktop_entry_path()
     entry_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if not icon_path.exists():
+        LOGGER.warning(
+            "Icon file %s does not exist; desktop entry will reference a missing icon.",
+            icon_path,
+        )
 
     desktop = DesktopEntry()
     desktop.set("Desktop Entry", "Version", "1.0")

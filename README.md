@@ -1,6 +1,6 @@
 # linuxcord
 
-linuxcord is a user-space Discord launcher for Linux. It downloads the official Discord tarball, installs it under XDG directories, keeps host updates current, and launches Discord without needing system-level packages.
+linuxcord is a user-space Discord launcher for Linux. It downloads the official Discord tarball, installs it under XDG directories, keeps host (the installed application on your machine) updates current, and launches Discord without needing system-level packages.
 
 ## Features
 - Installs Discord from the official tar.gz into user directories.
@@ -67,6 +67,9 @@ CLI options take precedence over environment variables. Defaults:
 - Discord tarball: `https://discord.com/api/download?platform=linux&format=tar.gz`
 - Updates API: `https://discord.com/api/updates/stable?platform=linux`
 
+### Host vs. in-app updates
+linuxcord only manages **host updates**, meaning the version of Discord installed on your system from the downloaded tarball. Discord also performs its own **in-app UI/content updates** after launch; linuxcord does not interfere with or manage those in-app downloads.
+
 ## XDG Paths
 linuxcord stores files under standard XDG locations:
 - Data: `$XDG_DATA_HOME/linuxcord` (default `~/.local/share/linuxcord`)
@@ -98,7 +101,6 @@ Run formatting and checks:
 uv run black .
 uv run flake8
 uv run basedpyright
-uv run pytest
 ```
 
 Build the project with uv's backend:
@@ -106,3 +108,6 @@ Build the project with uv's backend:
 ```bash
 uv build
 ```
+
+## Testing
+Automated tests are currently absent and will be added after refactoring the code to reduce monkeypatching requirements. TODO: reintroduce pytest-based coverage that exercises all non-launch code paths and document the coverage commands here.
