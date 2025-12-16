@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "linuxcord"
-version = "1.1.0"
+version = "1.2.0"
 description = "User-space Discord launcher/updater for Linux"
 readme = "README.md"
 authors = [{ name = "linuxcord", email = "noreply@example.com" }]
@@ -29,6 +29,8 @@ dev-dependencies = [
     "flake8-pyproject>=1.2",
     "basedpyright>=1.14",
     "pytest>=7.4",
+    "pytest-mock>=3.12",
+    "pytest-cov>=5.0",
 ]
 
 [tool.flake8]
@@ -41,3 +43,10 @@ pythonVersion = "3.11"
 [tool.black]
 target-version = ["py311"]
 line-length = 88
+
+[tool.coverage.run]
+source = ["linuxcord"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+omit = ["tests/*"]

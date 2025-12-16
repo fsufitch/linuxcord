@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import sys
 
 import click
@@ -13,16 +14,22 @@ logger = logging.getLogger(__name__)
 
 
 class Context:
-    discord_tgz_url: str | None
-    updates_url: str | None
+    discord_tgz_url: str
+    updates_url: str
 
-    def __init__(self, discord_tgz_url: str | None, updates_url: str | None):
+    def __init__(self, discord_tgz_url: str, updates_url: str):
         self.discord_tgz_url = discord_tgz_url
         self.updates_url = updates_url
 
 
-def _build_context(discord_tgz_url: str | None, updates_url: str | None) -> Context:
-    return Context(discord_tgz_url=discord_tgz_url, updates_url=updates_url)
+def _resolve_urls(discord_tgz_url: str | None, updates_url: str | None) -> Context:
+    env_discord = os.environ.get("LINUXCORD_DISCORD_TGZ_URL")
+    env_updates = os.environ.get("LINUXCORD_UPDATES_URL")
+
+    resolved_discord = discord_tgz_url or env_discord or DEFAULT_DISCORD_TGZ_URL
+    resolved_updates = updates_url or env_updates or DEFAULT_UPDATES_URL
+
+    return Context(resolved_discord, resolved_updates)
 
 
 @click.group()
@@ -47,10 +54,13 @@ def cli(
     updates_url: str | None,
 ) -> None:
     configure_logging(verbose)
-    ctx.obj = _build_context(discord_tgz_url, updates_url)
+    context = _resolve_urls(discord_tgz_url, updates_url)
+    ctx.obj = context
     if verbose:
         logger.debug(
-            "Using discord_tgz_url=%s, updates_url=%s", discord_tgz_url, updates_url
+            "Using discord_tgz_url=%s, updates_url=%s",
+            context.discord_tgz_url,
+            context.updates_url,
         )
 
 

@@ -35,8 +35,11 @@ def _safe_extract(tar: tarfile.TarFile, target: Path) -> None:
 
 
 class DiscordInstaller:
-    def __init__(self, linuxcord_paths: LinuxcordPaths):
+    def __init__(
+        self, linuxcord_paths: LinuxcordPaths, session: requests.Session
+    ) -> None:
         self._paths: LinuxcordPaths = linuxcord_paths
+        self._session: requests.Session = session
 
     def install(
         self, version: DiscordVersion, tgz_url: str, force: bool = False
@@ -94,7 +97,7 @@ class DiscordInstaller:
     def _download_tarball(self, url: str, dest: Path) -> None:
         logger.info("Downloading Discord from %s", url)
         dest.parent.mkdir(parents=True, exist_ok=True)
-        with requests.get(
+        with self._session.get(
             url, stream=True, timeout=15, allow_redirects=True
         ) as response:
             response.raise_for_status()
